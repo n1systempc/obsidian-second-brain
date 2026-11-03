@@ -1,0 +1,12 @@
+# Local configuration and note vaults do not belong in the public skill package.
+.env
+.env.*
+!.env.example
+.obsidian/
+.trash/
+vault/
+vaults/
+*.local.*
+.DS_Store
+Thumbs.db
+node_modules/

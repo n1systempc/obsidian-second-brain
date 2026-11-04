@@ -38,7 +38,7 @@ Para testar, salve uma nota de decisão na pasta de trabalho e pergunte “Qual 
 
 ## Claude no aplicativo ou site
 
-[Baixar o ZIP para importar no Claude](https://raw.githubusercontent.com/n1systempc/obsidian-second-brain/main/downloads/obsidian.zip). Envie o arquivo fechado em **Customize → Skills → + → Create skill → Upload a skill** e ative a skill. [Guia da Anthropic](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
+[Prepare o ZIP para importar no Claude](downloads/README.md). Envie o arquivo fechado em **Customize → Skills → + → Create skill → Upload a skill** e ative a skill. [Guia da Anthropic](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
 
 O chat web pode consultar notas anexadas ou um conector disponível. Para configurar o MCP local e criar a estrutura no disco, abra um agente com terminal na pasta real do projeto. A importação do ZIP, por si só, não conecta o computador ao chat.
 

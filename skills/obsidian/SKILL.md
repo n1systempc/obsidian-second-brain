@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Use o projeto atual como vault do Obsidian. O pedido “/obsidian install” registra o MCP, prepara as pastas e ativa a consulta recorrente. Use também para consultar decisões, preferências e notas do vault, ou para registrar notas quando solicitado.
+description: Use /obsidian install para conectar o MCP e configurar o projeto como vault. Consulte automaticamente notas, decisões e preferências do Obsidian e registre notas quando solicitado.
 license: MIT
 ---
 

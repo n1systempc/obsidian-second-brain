@@ -1,98 +1,47 @@
 # Obsidian Second Brain
 
-Use suas notas do Obsidian como contexto para agentes de código: projetos, preferências, decisões e conhecimento pessoal, com referências às notas consultadas.
+Transforme a pasta do projeto em um vault para decisões, estudos e notas de trabalho. O fluxo tem três etapas. Ele registra o servidor MCP no agente local, configura o vault e orienta o agente a consultar notas relevantes antes de responder.
 
-Uma skill no padrão aberto [Agent Skills](https://agentskills.io/specification), independente de fornecedor. Funciona com leitura de Markdown local, arquivos disponibilizados no projeto ou uma conexão de notas já configurada. Não exige plugin do Obsidian, servidor MCP ou chave de API para ler um cofre local acessível.
+## Começar no Claude Code, Codex ou OpenCode
 
-## Instalar em um projeto
-
-Na raiz do seu projeto, com Node.js 22.20 ou superior e npm disponíveis:
+Na raiz do projeto, instale a skill com Node.js 22.20 ou superior e npm:
 
 ```sh
-npx skills add n1systempc/obsidian-second-brain --skill obsidian-second-brain
+npx skills add n1systempc/obsidian-second-brain --skill obsidian
 ```
 
-O comando usa o instalador externo [Skills CLI](https://github.com/vercel-labs/skills). Escolha os agentes e o escopo de projeto no assistente. Revise as alterações antes de adicioná-las ao Git do seu projeto. O instalador tem seu próprio ciclo de versões e pode exigir acesso à rede.
+Escolha seu agente e a instalação por projeto. Abra uma sessão no mesmo projeto. Se quiser instalar manualmente, copie a pasta inteira [skills/obsidian](skills/obsidian) para `.claude/skills/` no Claude Code, `.agents/skills/` no Codex ou `.opencode/skills/` no OpenCode. A distribuição com o nome anterior `obsidian-second-brain` continua disponível com o mesmo fluxo. Instale apenas um dos nomes.
 
-### Instalação manual, sem npm
-
-Baixe este repositório pelo GitHub (Code → Download ZIP) ou clone:
-
-```sh
-git clone https://github.com/n1systempc/obsidian-second-brain.git
-```
-
-Copie `SKILL.md` e `LICENSE` para uma pasta chamada `obsidian-second-brain` dentro do diretório apropriado do seu projeto:
-
-| Agente | Caminho dentro do projeto |
+| Cliente | Pedido no chat do projeto |
 | --- | --- |
-| Claude Code | `.claude/skills/obsidian-second-brain/` |
-| Codex | `.agents/skills/obsidian-second-brain/` |
-| OpenCode | `.opencode/skills/obsidian-second-brain/` |
-| Outros agentes com Agent Skills | Use o diretório de skills documentado pelo programa |
+| Claude Code | `/obsidian install` |
+| Codex | `$obsidian install` |
+| OpenCode ou cliente sem atalho de skill | `Use a skill obsidian para instalar e configurar o vault deste projeto.` |
 
-OpenCode também reconhece `.agents/skills` e `.claude/skills`. Evite instalar cópias duplicadas para o mesmo agente. Reabra a sessão caso a skill ainda não apareça. Os caminhos acima foram conferidos na documentação dos fornecedores; isso não significa teste de execução em cada aplicativo ou versão.
+O pedido acima é feito ao agente. Ele usa o terminal da sessão para configurar o servidor.
 
-Para um agente sem suporte a Agent Skills, peça que leia o `SKILL.md` como instruções da tarefa, ou adapte seu conteúdo ao arquivo de regras aceito pelo programa. Isso é uso manual, sem garantia de descoberta automática. Editores sem agente de IA não executam skills.
+### 1. Instalação do MCP
 
-## Conectar seu próprio cofre
+O projeto aberto é o vault. O agente resolve seu caminho absoluto e registra o servidor [@bitbonsai/mcpvault](https://github.com/bitbonsai/mcpvault) com `claude mcp add obsidian -- npx -y @bitbonsai/mcpvault "<raiz-do-projeto>"` ou o equivalente `codex mcp add`. No OpenCode ele usa a configuração MCP local. Se o nome estiver associado a outro cofre, o agente pede que você escolha antes de alterá-lo. [Detalhes por cliente](skills/obsidian/references/mcp.md)
 
-Depois de instalar, diga ao agente:
+### 2. Configuração e personalização
 
-> Use a skill obsidian-second-brain. Meu cofre está em /caminho/do/meu/cofre. Consulte as notas relevantes antes de responder a este pedido: [seu pedido].
+O agente cria sete pastas numeradas, um índice HOME.md, os templates de nota, diário e decisão e regras equivalentes em CLAUDE.md e AGENTS.md. A configuração preserva notas existentes e a pasta .obsidian. O agente mostra a árvore e pergunta quais são suas três áreas com mais anotações. Sua resposta define os nomes das pastas 10, 20 e 30 e atualiza os links e as rotas.
 
-No Windows, use seu caminho real, por exemplo `C:/Notas/MeuCofre`. Em Linux/macOS, use um caminho acessível ao agente. Se o agente estiver em um contêiner ou ambiente remoto, o cofre também precisa estar acessível nesse ambiente.
+O Linter é opcional. Se quiser normalizar frontmatter ao salvar, instale esse plugin pelo próprio Obsidian.
 
-Como alternativa, configure a variável opcional `OBSIDIAN_VAULT_PATH` no ambiente que inicia o agente:
+### 3. Consulta automática
 
-```powershell
-# PowerShell: vale para esta sessão e seus processos filhos
-$env:OBSIDIAN_VAULT_PATH = 'C:/Notas/MeuCofre'
-```
+Em cada novo pedido substantivo, o agente segue as regras do projeto. A palavra-chave “trabalho”, por exemplo, leva diretamente à pasta 10-Trabalho até que você a personalize. O agente filtra pelo frontmatter, lê até cinco notas relevantes e cita os caminhos usados. Escritas dependem de um pedido seu.
 
-```sh
-# Bash/zsh: vale para esta sessão e seus processos filhos
-export OBSIDIAN_VAULT_PATH='/caminho/do/meu/cofre'
-```
+Para testar, salve uma nota de decisão na pasta de trabalho e pergunte “Qual foi a decisão sobre esse projeto e em qual nota ela está?”. Você também pode pedir para pular a consulta.
 
-A variável é uma convenção desta skill, não uma integração automática do Obsidian. Apps já abertos podem não herdá-la. Você também pode fornecer notas anexadas ou indicar uma conexão existente com acesso ao cofre. Cada usuário configura seu próprio acesso; instalar a skill não concede acesso às notas de outra pessoa.
+## Claude no aplicativo ou site
 
-## Consultar antes de cada pedido
+[Baixar o ZIP para importar no Claude](https://raw.githubusercontent.com/n1systempc/obsidian-second-brain/main/downloads/obsidian.zip). Envie o arquivo fechado em **Customize → Skills → + → Create skill → Upload a skill** e ative a skill. [Guia da Anthropic](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
 
-Adicione o trecho abaixo às instruções persistentes do seu agente/projeto, preservando as regras existentes. Use `CLAUDE.md` no Claude Code ou `AGENTS.md` nos agentes que reconhecem esse arquivo. Para outros programas, consulte o formato de regras deles.
-
-```markdown
-Antes de cada novo pedido substantivo, use a skill obsidian-second-brain
-para consultar notas relevantes do cofre configurado pelo usuário.
-Reutilize contexto recente em continuações e respeite pedidos para não consultar.
-Se o cofre não estiver acessível, informe uma vez e continue o trabalho independente.
-Não publique notas, credenciais ou caminhos pessoais no repositório.
-```
-
-Defina o caminho do cofre localmente ou na conversa, sem colocá-lo nas instruções compartilhadas. Instruções persistentes orientam o agente, mas não garantem execução em todos os programas, modelos ou sessões.
-
-## Exemplos
-
-- “Consulte minhas notas sobre o projeto Atlas e resuma as decisões que afetam esta implementação.”
-- “Procure minhas preferências de escrita e revise este texto seguindo as notas relevantes.”
-- “Registre esta decisão na nota do projeto, preservando o frontmatter e os links.”
-
-A consulta habitual é somente leitura. A escrita depende de um pedido para salvar, atualizar ou organizar. Sem acesso ao cofre, o agente deve dizer isso e não inventar lembranças.
-
-## Privacidade e compartilhamento
-
-Este repositório distribui as instruções da skill. Ele não sincroniza nem hospeda cofres. Mantenha notas, configurações pessoais e credenciais fora deste repositório público. Conceda ao agente apenas o acesso ao cofre que você pretende usar.
-
-Para contribuir, abra uma issue ou pull request com exemplos fictícios. Não inclua notas privadas. Mudanças devem preservar a portabilidade, a escolha de cofre pelo usuário e a distinção entre consultar e editar.
-
-## Referências de compatibilidade
-
-- [Agent Skills: especificação](https://agentskills.io/specification)
-- [Claude Code: skills](https://code.claude.com/docs/en/skills)
-- [OpenCode: skills](https://opencode.ai/docs/skills/)
-- [Codex: criação de skills](https://learn.chatgpt.com/docs/build-skills)
-- [Skills CLI: instalação em agentes](https://github.com/vercel-labs/skills)
+O chat web pode consultar notas anexadas ou um conector disponível. Para configurar o MCP local e criar a estrutura no disco, abra um agente com terminal na pasta real do projeto. A importação do ZIP, por si só, não conecta o computador ao chat.
 
 ## Licença
 
-MIT. Consulte [LICENSE](LICENSE).
+[MIT](LICENSE). O repositório distribui a skill. Cada usuário escolhe o projeto e mantém suas notas localmente.

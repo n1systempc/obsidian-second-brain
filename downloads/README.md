@@ -1,6 +1,8 @@
 # Importar no Claude
 
-Para gerar o ZIP da versão pública com Git, execute estes comandos no terminal:
+Baixe o ZIP pronto: [obsidian.zip](https://github.com/n1systempc/obsidian-second-brain/raw/main/downloads/obsidian.zip).
+
+Se preferir gerar o ZIP da versão pública com Git, execute estes comandos no terminal:
 
 ```sh
 git clone https://github.com/n1systempc/obsidian-second-brain.git

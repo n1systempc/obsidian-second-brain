@@ -10,6 +10,10 @@ try {
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
 // An explicit external vault must already exist. Only the project-local default is created.
 if (!process.argv[3]) await mkdir(requestedVault, { recursive: true });
+else {
+  try { await lstat(requestedVault); }
+  catch (error) { throw error.code === 'ENOENT' ? Error('Vault externo não encontrado: ' + requestedVault) : error; }
+}
 const root = await realpath(requestedVault);
 const folders = [
   ['00-Inbox', 'inbox', 'Notas aguardando classificação'],
@@ -20,6 +24,7 @@ const folders = [
   ['70-Daily', 'daily', 'Diário e registros por dia'],
   ['99-Templates', 'templates', 'Modelos de notas']
 ];
+const defaultKeys = folders.map(([,key]) => key);
 const existing = await readdir(root);
 for (const entry of folders.slice(1,4)) {
   const candidates = existing.filter(name => name.startsWith(entry[0].slice(0,3)));
@@ -57,12 +62,22 @@ function vaultPath(base) {
   const path = relative(base,root);
   return (isAbsolute(path) || path.startsWith('..') ? root : path || '.').replaceAll('\\','/');
 }
-const rules = (base) => [
+// Routing rows the user added inside the managed block survive a reinstall.
+function customRows(text) {
+  const start = text.indexOf(begin), finish = text.indexOf(end);
+  if (start < 0 || finish < 0) return [];
+  const generated = new Set([...defaultKeys, ...folders.map(([,key]) => key)]);
+  return text.slice(start, finish).split(/\r?\n/).filter(line => {
+    const cells = line.split('|').map(cell => cell.trim());
+    return cells.length === 4 && cells[1] && !/^-+$/.test(cells[1]) && cells[1] !== 'Palavra-chave' && !generated.has(cells[1]);
+  });
+}
+const rules = (base, extra = []) => [
   begin, '## Memória do projeto', '',
   'Vault configurado: `' + vaultPath(base) + '`. Resolva os caminhos abaixo a partir da pasta deste arquivo. Use o MCP somente se ele apontar para este vault; caso contrário, leia os arquivos locais autorizados.', '',
   'Antes de cada novo pedido substantivo consulte as notas relevantes com a skill Obsidian. Reutilize contexto atual em continuações e respeite pedidos para pular a consulta.',
   '', '| Palavra-chave | Caminho direto |', '| --- | --- |',
-  ...folders.map(([folder,key]) => `| ${key} | \`${vaultPath(base)}/${folder}/\` |`),
+  ...folders.map(([folder,key]) => `| ${key} | \`${vaultPath(base)}/${folder}/\` |`), ...extra,
   '', 'Se a palavra-chave estiver na tabela, vá direto à pasta. Dentro dela, use termos específicos. Sem rota, busque por título, tags ou alias antes de abrir notas. Leia o frontmatter primeiro, filtre por área, tipo e status e então leia até 3–5 notas relevantes. Cite a origem. Nunca leia o vault inteiro.',
   '', 'Escreva somente a pedido. Use uma nota atômica por conceito, arquivo em kebab-case sem acento, wikilinks [[assim]] e updated a cada alteração. Sem destino explícito, crie em 00-Inbox dentro do vault com status inbox.',
   '', 'Frontmatter obrigatório: id (YYYYMMDD-HHMM), title, area, type (nota, meeting, decisao, estudo, ideia ou daily), tags (lista), status (inbox, ativo ou arquivado), created e updated. Preencha valores reais ao criar a nota. Preserve o id nas edições e confira se já existe antes de reutilizar um identificador.', end
@@ -77,7 +92,7 @@ for (const path of instructionPaths) {
   try { previous = await readFile(path,'utf8'); }
   catch(error) { if(error.code !== 'ENOENT') throw error; }
   const base = resolve(path,'..');
-  const content = rules(base);
+  const content = rules(base, previous === undefined ? [] : customRows(previous));
   if(previous === undefined) await writeFile(path,'# Instruções do projeto\n\n'+content+'\n',{flag:'wx'});
   else if(!previous.includes(begin) && !previous.includes(end))
     await writeFile(path,'\n\n'+content+'\n',{flag:'a'});
